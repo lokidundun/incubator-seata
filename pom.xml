@@ -434,11 +434,46 @@
                         </goals>
                     </execution>
                 </executions>
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>com.alibaba.p3c</groupId>-->
+<!--                        <artifactId>p3c-pmd</artifactId>-->
+<!--                        <version>${p3c-pmd.version}</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+            </plugin>
+            <!-- CheckStyle -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <!-- 指向Seata根目录的config/checkstyle/ali-checkstyle.xml（需手动放这个文件） 这个文件我还没有弄 -->
+                    <configLocation>config/checkstyle/ali-checkstyle.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>false</failsOnError>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <excludes>
+                        <exclude>**/generated/*.java</exclude>
+                        <exclude>**/antlr/mysql/parser/*.*</exclude>
+                        <exclude>**/antlr/mysql/antlr/*.*</exclude>
+                        <exclude>**/antlr/mysql/stream/ANTLRNoCaseStringStream.java</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>com.alibaba.p3c</groupId>
-                        <artifactId>p3c-pmd</artifactId>
-                        <version>${p3c-pmd.version}</version>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>10.12.0</version>
                     </dependency>
                 </dependencies>
             </plugin>

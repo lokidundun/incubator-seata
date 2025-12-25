@@ -1,0 +1,54 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: CheckStyle AutoFix
+on: [pull_request]
+
+jobs:
+  code-style-autofix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Seata code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      # 2. 配置JDK（适配Seata的JDK21，兼容java17+ profile）
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 3. 自动修复Spotless格式（激活java17+ profile）
+      - name: Auto-fix Spotless code format
+        run: mvn spotless:apply -Pjava17+
+
+      # 4. 执行CheckStyle规范检查（不中断构建）
+      - name: Run CheckStyle
+        run: mvn checkstyle:check -Dcheckstyle.config.location=config/checkstyle/ali-checkstyle.xml
+
+      # 5. autofix.ci自动提交所有修复（格式+规范）
+      - name: Auto commit fixes to PR
+        uses: autofix-ci/action@v1
+        with:
+          commit-message: "style: auto fix spotless format"
+          branch: ${{ github.head_ref }}
