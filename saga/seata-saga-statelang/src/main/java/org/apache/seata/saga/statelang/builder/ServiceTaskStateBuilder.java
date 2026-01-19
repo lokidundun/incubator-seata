@@ -16,106 +16,80 @@
  */
 package org.apache.seata.saga.statelang.builder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 
-public class ServiceTaskStateBuilder {
+/**
+ * 对应类图的 ServiceTaskState 实现类
+ * 继承自 TaskStateBuilder，复用公共属性
+ */
+public class ServiceTaskStateBuilder extends TaskStateBuilder {
 
-    private final StateMachineBuilder parent;
-    private final String name;
-    private final Map<String, Object> node;
-
-    public ServiceTaskStateBuilder(StateMachineBuilder parent, String name, Map<String, Object> node) {
-        this.parent = parent;
-        this.name = name;
-        this.node = node;
+    public ServiceTaskStateBuilder(StateMachineBuilder parent, String stateName, Map<String, Object> nodeConfig) {
+        super(parent, stateName, nodeConfig);
     }
 
+    // ========== ServiceTask 专属属性 ==========
+    /**
+     * ServiceName element
+     */
     public ServiceTaskStateBuilder serviceName(String serviceName) {
-        node.put("ServiceName", serviceName);
+        nodeConfig.put("ServiceName", serviceName);
         return this;
     }
 
+    /**
+     * ServiceMethod element
+     */
     public ServiceTaskStateBuilder serviceMethod(String serviceMethod) {
-        node.put("ServiceMethod", serviceMethod);
+        nodeConfig.put("ServiceMethod", serviceMethod);
         return this;
     }
 
+    /**
+     * CompensateState element
+     */
     public ServiceTaskStateBuilder compensateState(String compensateStateName) {
-        node.put("CompensateState", compensateStateName);
+        nodeConfig.put("CompensateState", compensateStateName);
         return this;
     }
 
+    /**
+     * Input element
+     */
     public ServiceTaskStateBuilder input(Object... inputParams) {
-        node.put("Input", Arrays.asList(inputParams));
+        nodeConfig.put("Input", Arrays.asList(inputParams));
         return this;
     }
 
+    /**
+     * Output element
+     */
     public ServiceTaskStateBuilder output(Map<String, Object> output) {
-        node.put("Output", output);
+        nodeConfig.put("Output", output);
         return this;
     }
 
-    public ServiceTaskStateBuilder status(Map<String, String> statusMap) {
-        node.put("Status", statusMap);
-        return this;
-    }
-
-    public ServiceTaskStateBuilder catchExceptions(List<String> exceptions, String nextState) {
-        List<Map<String, Object>> catchList = (List<Map<String, Object>>) node.getOrDefault("Catch", new ArrayList<>());
-        Map<String, Object> catchItem = new LinkedHashMap<>();
-        catchItem.put("Exceptions", exceptions);
-        catchItem.put("Next", nextState);
-        catchList.add(catchItem);
-        node.put("Catch", catchList);
-        return this;
-    }
-
-    public ServiceTaskStateBuilder next(String nextState) {
-        BuilderHelper.setNext(parent.getStates(), name, nextState);
-        return this;
-    }
-
-    // 1. 基础布尔属性
+    /**
+     * IsForUpdate element
+     */
     public ServiceTaskStateBuilder forUpdate(boolean isForUpdate) {
-        node.put("IsForUpdate", isForUpdate);
+        nodeConfig.put("IsForUpdate", isForUpdate);
         return this;
     }
 
-    public ServiceTaskStateBuilder persist(boolean isPersist) {
-        node.put("IsPersist", isPersist);
+    /**
+     * parameterTypes element
+     */
+    public ServiceTaskStateBuilder parameterTypes(String... parameterTypes) {
+        nodeConfig.put("ParameterTypes", Arrays.asList(parameterTypes));
         return this;
     }
 
-    public ServiceTaskStateBuilder async(boolean isAsync) {
-        node.put("IsAsync", isAsync);
+
+    @Override
+    public ServiceTaskStateBuilder next(String nextState) {
+        BuilderHelper.setNext(parent.getStates(), stateName, nextState);
         return this;
     }
-
-    public ServiceTaskStateBuilder retryPersistModeUpdate(boolean isRetryPersistModeUpdate) {
-        node.put("IsRetryPersistModeUpdate", isRetryPersistModeUpdate);
-        return this;
-    }
-
-    public ServiceTaskStateBuilder compensatePersistModeUpdate(boolean isCompensatePersistModeUpdate) {
-        node.put("IsCompensatePersistModeUpdate", isCompensatePersistModeUpdate);
-        return this;
-    }
-
-    // 2. 重试配置（Retry）
-    public ServiceTaskStateBuilder retry(Map<String, Object> retryConfig) {
-        node.put("Retry", retryConfig);
-        return this;
-    }
-
-    // 3. 循环配置（Loop）
-    public ServiceTaskStateBuilder loop(Map<String, Object> loopConfig) {
-        node.put("Loop", loopConfig);
-        return this;
-    }
-
-    public StateMachineBuilder endStateBuilder() {
-        return parent;
-    }
-
-
 }

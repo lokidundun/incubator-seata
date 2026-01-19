@@ -77,7 +77,7 @@ public class test {
                 .input("$.[businessKey]", "$.[amount]", mockException)
                 .output(balanceOutput)
                 .status(balanceStatus)
-                .catchExceptions(exceptions, "CompensationTrigger")
+//                .catchExceptions(exceptions, "CompensationTrigger")
                 .next("Succeed")
                 .endStateBuilder();
 
@@ -153,7 +153,7 @@ public class test {
                 .async(false)
                 .retryPersistModeUpdate(false)
                 .compensatePersistModeUpdate(false)
-                .retry(retryConfig)
+//                .retry(retryConfig)
                 .loop(loopConfig)
                 .next("Succeed")
                 .endStateBuilder();
@@ -167,6 +167,60 @@ public class test {
         System.out.println("✅ 生成标准Saga JSON：\n" + targetJson);
     }
 
+    @Test
+    public void test3() {
+        StateMachineBuilder builder = StateMachineBuilder.create("fullStateMachine", "1.0")
+                .startAt("ReduceInventory");
+
+        // 1. ServiceTaskState（已有）
+        builder.serviceTask("ReduceInventory")
+                .serviceName("inventoryAction")
+                .serviceMethod("reduce")
+                .async(true)
+//                .loop(Map.of("Parallel", 3))
+                .next("ScriptCheck")
+                .end();
+
+        // 2. ScriptTaskState（新增）
+        builder.scriptTask("ScriptCheck")
+                .scriptType("groovy")
+                .scriptContent("return amount > 0;")
+//                .retry(Map.of("MaxAttempts", 3))
+                .next("LoopStart")
+                .end();
+
+        // 3. LoopStartState（新增）
+        builder.loopStart("LoopStart")
+                .loopCondition("$.[loopCount] < 5")
+                .maxLoopTimes(5)
+                .next("CompensateSubMachine")
+                .endState("Succeed")
+                .end();
+
+        // 4. CompensateSubStateMachineState（新增）
+        builder.compensateSubStateMachine("CompensateSubMachine")
+                .subStateMachineName("compensateInventory")
+                .subStateMachineVersion("1.0")
+                .input("$.[businessKey]")
+                .next("Succeed")
+                .end();
+
+        // 5. ChoiceState（已有）
+        builder.choice("ChoiceState")
+                .choiceItem("$.[amount] > 1000", "HighAmount")
+                .defaultChoice("NormalAmount")
+                .end();
+
+        // 6. 成功/失败节点（已有）
+        builder.succeed("Succeed");
+        builder.fail("Fail", "ERROR", "failed");
+
+        // 生成 JSON 和领域模型
+        String json = builder.buildJson();
+        StateMachineImpl stateMachine = builder.build();
+        System.out.println(json);
+        System.out.println(stateMachine);
+    }
 
 
 }

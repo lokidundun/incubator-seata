@@ -16,46 +16,47 @@
  */
 package org.apache.seata.saga.statelang.builder;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-public class ChoiceStateBuilder implements SubStateBuilder {
+/**
+ * 对应类图的 LoopStartState 实现类
+ */
+public class LoopStartStateBuilder implements SubStateBuilder {
     private final StateMachineBuilder parent;
     private final String stateName;
     private final Map<String, Object> nodeConfig;
 
-    public ChoiceStateBuilder(StateMachineBuilder parent, String stateName, Map<String, Object> nodeConfig) {
+    public LoopStartStateBuilder(StateMachineBuilder parent, String stateName, Map<String, Object> nodeConfig) {
         this.parent = parent;
         this.stateName = stateName;
         this.nodeConfig = nodeConfig;
     }
 
-    @Override
-    public SubStateBuilder next(String nextState) {
-        BuilderHelper.setNext(parent.getStates(), stateName, nextState);
+    // ========== LoopStartState 专属属性 ==========
+    public LoopStartStateBuilder loopCondition(String loopCondition) {
+        nodeConfig.put("LoopCondition", loopCondition);
         return this;
     }
 
-    public ChoiceStateBuilder choiceItem(String expression, String nextState) {
-        List<Map<String, Object>> choices = (List<Map<String, Object>>) nodeConfig.getOrDefault("Choices", new ArrayList<>());
-        Map<String, Object> choice = new LinkedHashMap<>();
-        choice.put("Expression", expression);
-        choice.put("Next", nextState);
-        choices.add(choice);
-        nodeConfig.put("Choices", choices);
+    public LoopStartStateBuilder maxLoopTimes(int maxLoopTimes) {
+        nodeConfig.put("MaxLoopTimes", maxLoopTimes);
         return this;
     }
 
-    public ChoiceStateBuilder defaultChoice(String nextState) {
-        nodeConfig.put("Default", nextState);
+    public LoopStartStateBuilder endState(String endState) {
+        nodeConfig.put("EndState", endState);
         return this;
     }
 
-    // ========== 实现SubStateBuilder接口 【对齐Java标准Builder模式 核心】 ==========
+    // ========== 实现 SubStateBuilder 接口 ==========
     @Override
     public StateMachineBuilder end() {
         return parent;
+    }
+
+    @Override
+    public LoopStartStateBuilder next(String nextState) {
+        BuilderHelper.setNext(parent.getStates(), stateName, nextState);
+        return this;
     }
 }
