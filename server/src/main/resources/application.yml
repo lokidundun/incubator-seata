@@ -55,3 +55,10 @@ seata:
     mode: file
   #  server:
   #    service-port: 8091 #If not configured, the default is '${server.port} + 1000'
+  #
+  # Storage Mode Migration Management API (optional)
+  # To enable the management API, uncomment the following:
+  #
+  # management:
+  #   enabled: true
+  #   port: 7091
