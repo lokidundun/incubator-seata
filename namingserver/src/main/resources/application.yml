@@ -43,13 +43,13 @@ heartbeat:
 console:
   # console username and password configuration
   user:
-    username:
-    password:
+    username: seata
+    password: seata
   # When the console is deployed independently, configure the namingserver address
 #  namingserver:
-#    protocol: http
-#    addr:
-#      - 127.0.0.1:8081
+    protocol: http
+    addr:
+      - 127.0.0.1:8081
 seata:
   namingserver:
     metrics:

@@ -16,17 +16,51 @@
  */
 package org.apache.seata.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 
 /**
+ * Seata Server Application
+ *
+ * Features:
+ * - Storage mode migration API (optional, enabled via seata.management.enabled)
+ * - Support for FILE, DB, REDIS, RAFT storage modes
+ *
+ * To enable storage migration management API:
+ * - Set system property: -Dseata.management.enabled=true
+ * - Or add to application.yml:
+ *   seata:
+ *     management:
+ *       enabled: true
+ *       port: 7091
+ *
  */
 @SpringBootApplication(scanBasePackages = {"org.apache.seata"})
 public class ServerApplication {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerApplication.class);
+
     public static void main(String[] args) throws IOException {
-        // run the spring-boot application
+        // Print migration API info
+        String managementEnabled = System.getProperty("seata.management.enabled", "false");
+        String managementPort = System.getProperty("seata.management.port", "7091");
+
+        if ("true".equalsIgnoreCase(managementEnabled)) {
+            LOGGER.info("===============================================");
+            LOGGER.info("  Storage Mode Migration API is enabled");
+            LOGGER.info("  API URL: http://localhost:{}/api/v1/storage/migration", managementPort);
+            LOGGER.info("  Endpoints:");
+            LOGGER.info("    - POST /api/v1/storage/migration/start  - Start migration");
+            LOGGER.info("    - GET  /api/v1/storage/migration/status - Get status");
+            LOGGER.info("    - GET  /api/v1/storage/migration/modes  - List modes");
+            LOGGER.info("    - GET  /api/v1/storage/migration/check  - Check support");
+            LOGGER.info("===============================================");
+        }
+
+        // Run the spring-boot application
         SpringApplication.run(ServerApplication.class, args);
     }
 }
