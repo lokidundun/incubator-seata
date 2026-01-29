@@ -30,6 +30,7 @@ public class FailEndStateBuilder implements StateBuilder<FailEndState> {
     private final StatesConfigurer statesConfigurer;
     private String comment;
     private String errorCode;
+    private String message;
 
     public FailEndStateBuilder(String name, StatesConfigurer statesConfigurer) {
         this.name = name;
@@ -58,12 +59,24 @@ public class FailEndStateBuilder implements StateBuilder<FailEndState> {
         return this;
     }
 
+    /**
+     * Sets the error message for this failure.
+     *
+     * @param message the error message
+     * @return this builder
+     */
+    public FailEndStateBuilder withMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
     @Override
     public FailEndState build() {
         FailEndStateImpl state = new FailEndStateImpl();
         state.setName(name);
         state.setComment(comment);
         state.setErrorCode(errorCode);
+        state.setMessage(message);
         return state;
     }
 

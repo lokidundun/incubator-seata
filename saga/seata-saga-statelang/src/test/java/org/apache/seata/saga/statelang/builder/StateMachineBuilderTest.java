@@ -375,4 +375,145 @@ public class StateMachineBuilderTest {
         assertEquals("compensateService", compensateSub.getServiceName());
         assertEquals("compensate", compensateSub.getServiceMethod());
     }
+
+    @Test
+    public void testComplexStateMachineWithCompensation() {
+        // Test case for: reduceInventoryAndBalance saga definition
+        StateMachine stateMachine = StateMachineBuilder.stateMachineBuilder()
+                .withName("reduceInventoryAndBalance")
+                .withComment("reduce inventory then reduce balance in a transaction")
+                .withStartState("ReduceInventory")
+                .withVersion("0.0.1")
+                .withStates()
+                // ReduceInventory task
+                .newServiceTask("ReduceInventory")
+                .withServiceName("inventoryAction")
+                .withServiceMethod("reduce")
+                .withCompensateState("CompensateReduceInventory")
+                .withNext("ChoiceState")
+                .withInput("$.[businessKey]", "$.[count]")
+                .withOutput(new HashMap<String, Object>() {
+                    {
+                        put("reduceInventoryResult", "$.#root");
+                    }
+                })
+                .and()
+                // ChoiceState for conditional routing
+                .newChoice("ChoiceState")
+                .withChoice("[reduceInventoryResult] == true", "ReduceBalance")
+                .withDefault("Fail")
+                .and()
+                // ReduceBalance task with exception handling
+                .newServiceTask("ReduceBalance")
+                .withServiceName("balanceAction")
+                .withServiceMethod("reduce")
+                .withCompensateState("CompensateReduceBalance")
+                .withInput("$.[businessKey]", "$.[amount]", new HashMap<String, Object>() {
+                    {
+                        put("throwException", "$.[mockReduceBalanceFail]");
+                    }
+                })
+                .withOutput(new HashMap<String, Object>() {
+                    {
+                        put("compensateReduceBalanceResult", "$.#root");
+                    }
+                })
+                .withCatch(Throwable.class, "CompensationTrigger")
+                .withNext("Succeed")
+                .and()
+                // Compensation task for ReduceInventory
+                .newServiceTask("CompensateReduceInventory")
+                .withServiceName("inventoryAction")
+                .withServiceMethod("compensateReduce")
+                .withForCompensation(true)
+                .withInput("$.[businessKey]")
+                .and()
+                // Compensation task for ReduceBalance
+                .newServiceTask("CompensateReduceBalance")
+                .withServiceName("balanceAction")
+                .withServiceMethod("compensateReduce")
+                .withForCompensation(true)
+                .withInput("$.[businessKey]")
+                .and()
+                // Compensation trigger
+                .newCompensationTrigger("CompensationTrigger")
+                .withNext("Fail")
+                .and()
+                // End states
+                .succeedEnd("Succeed")
+                .newFailEnd("Fail")
+                .withErrorCode("PURCHASE_FAILED")
+                .withMessage("purchase failed")
+                .and()
+                .configure()
+                .build();
+
+        assertNotNull(stateMachine);
+        assertEquals("reduceInventoryAndBalance", stateMachine.getName());
+        assertEquals("reduce inventory then reduce balance in a transaction", stateMachine.getComment());
+        assertEquals("ReduceInventory", stateMachine.getStartState());
+        assertEquals("0.0.1", stateMachine.getVersion());
+
+        // Verify all states are registered
+        Map<String, State> states = stateMachine.getStates();
+        assertEquals(8, states.size());
+        assertTrue(states.containsKey("ReduceInventory"));
+        assertTrue(states.containsKey("ChoiceState"));
+        assertTrue(states.containsKey("ReduceBalance"));
+        assertTrue(states.containsKey("CompensateReduceInventory"));
+        assertTrue(states.containsKey("CompensateReduceBalance"));
+        assertTrue(states.containsKey("CompensationTrigger"));
+        assertTrue(states.containsKey("Succeed"));
+        assertTrue(states.containsKey("Fail"));
+
+        // Verify ReduceInventory state
+        ServiceTaskStateImpl reduceInventory = (ServiceTaskStateImpl) stateMachine.getState("ReduceInventory");
+        assertEquals("inventoryAction", reduceInventory.getServiceName());
+        assertEquals("reduce", reduceInventory.getServiceMethod());
+        assertEquals("CompensateReduceInventory", reduceInventory.getCompensateState());
+        assertEquals("ChoiceState", reduceInventory.getNext());
+        assertNotNull(reduceInventory.getInputExpressions());
+        assertEquals(2, reduceInventory.getInputExpressions().size());
+        assertNotNull(reduceInventory.getOutputExpressions());
+
+        // Verify ChoiceState
+        ChoiceStateImpl choiceState = (ChoiceStateImpl) stateMachine.getState("ChoiceState");
+        assertEquals(StateType.CHOICE, choiceState.getType());
+        assertEquals(1, choiceState.getChoices().size());
+        assertEquals("Fail", choiceState.getDefault());
+
+        // Verify ReduceBalance with exception handling
+        ServiceTaskState reduceBalance = (ServiceTaskState) stateMachine.getState("ReduceBalance");
+        assertEquals("balanceAction", reduceBalance.getServiceName());
+        assertEquals("reduce", reduceBalance.getServiceMethod());
+        assertNotNull(reduceBalance.getCatches());
+        assertEquals(1, reduceBalance.getCatches().size());
+        assertEquals("CompensationTrigger", reduceBalance.getCatches().get(0).getNext());
+
+        // Verify compensation states
+        ServiceTaskState compensateReduceInventory =
+                (ServiceTaskState) stateMachine.getState("CompensateReduceInventory");
+        assertTrue(compensateReduceInventory.isForCompensation());
+        assertEquals("inventoryAction", compensateReduceInventory.getServiceName());
+        assertEquals("compensateReduce", compensateReduceInventory.getServiceMethod());
+
+        ServiceTaskState compensateReduceBalance = (ServiceTaskState) stateMachine.getState("CompensateReduceBalance");
+        assertTrue(compensateReduceBalance.isForCompensation());
+        assertEquals("balanceAction", compensateReduceBalance.getServiceName());
+        assertEquals("compensateReduce", compensateReduceBalance.getServiceMethod());
+
+        // Verify CompensationTrigger
+        CompensationTriggerState compensationTrigger =
+                (CompensationTriggerState) stateMachine.getState("CompensationTrigger");
+        assertEquals(StateType.COMPENSATION_TRIGGER, compensationTrigger.getType());
+        assertEquals("Fail", compensationTrigger.getNext());
+
+        // Verify end states
+        assertEquals(StateType.SUCCEED, stateMachine.getState("Succeed").getType());
+
+        FailEndState failEnd = (FailEndState) stateMachine.getState("Fail");
+        assertEquals(StateType.FAIL, failEnd.getType());
+        assertEquals("PURCHASE_FAILED", failEnd.getErrorCode());
+        assertEquals("purchase failed", failEnd.getMessage());
+    }
 }

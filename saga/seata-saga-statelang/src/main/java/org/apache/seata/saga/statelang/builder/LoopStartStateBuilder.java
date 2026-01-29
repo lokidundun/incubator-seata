@@ -23,7 +23,6 @@ import org.apache.seata.saga.statelang.domain.impl.LoopStartStateImpl;
  * Builder for creating LoopStartState definitions.
  * LoopStartState is used to define the start of a loop/iteration.
  *
- * @author xingfudeshi@gmail.com
  */
 public class LoopStartStateBuilder implements StateBuilder<LoopStartState> {
 

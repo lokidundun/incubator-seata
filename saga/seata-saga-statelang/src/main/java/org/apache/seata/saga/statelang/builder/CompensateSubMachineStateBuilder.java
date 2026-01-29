@@ -23,7 +23,6 @@ import org.apache.seata.saga.statelang.domain.impl.CompensateSubStateMachineStat
  * Builder for creating CompensateSubStateMachineState definitions.
  * CompensateSubStateMachineState is used to compensate a child state machine.
  *
- * @author xingfudeshi@gmail.com
  */
 public class CompensateSubMachineStateBuilder
         extends AbstractTaskStateBuilder<CompensateSubStateMachineState, CompensateSubMachineStateBuilder> {

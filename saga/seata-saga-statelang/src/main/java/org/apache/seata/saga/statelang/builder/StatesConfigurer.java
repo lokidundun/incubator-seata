@@ -75,12 +75,28 @@ public interface StatesConfigurer {
     StatesConfigurer failEnd(String stateName);
 
     /**
+     * Creates a new FailEnd state builder.
+     *
+     * @param stateName the name of the state
+     * @return the FailEndStateBuilder for configuration
+     */
+    FailEndStateBuilder newFailEnd(String stateName);
+
+    /**
      * Adds a CompensationTrigger state.
      *
      * @param stateName the name of the compensation trigger state
      * @return this configurer for chaining
      */
     StatesConfigurer compensationTrigger(String stateName);
+
+    /**
+     * Creates a new CompensationTrigger state builder.
+     *
+     * @param stateName the name of the state
+     * @return the CompensationTriggerStateBuilder for configuration
+     */
+    CompensationTriggerStateBuilder newCompensationTrigger(String stateName);
 
     /**
      * Creates a new LoopStart state builder.

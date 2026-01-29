@@ -153,11 +153,25 @@ public class StateMachineBuilderImpl implements StateMachineBuilder, StatesConfi
     }
 
     @Override
+    public FailEndStateBuilder newFailEnd(String stateName) {
+        FailEndStateBuilder builder = new FailEndStateBuilder(stateName, this);
+        stateBuilders.put(stateName, builder);
+        return builder;
+    }
+
+    @Override
     public StatesConfigurer compensationTrigger(String stateName) {
         CompensationTriggerStateImpl state = new CompensationTriggerStateImpl();
         state.setName(stateName);
         states.put(stateName, state);
         return this;
+    }
+
+    @Override
+    public CompensationTriggerStateBuilder newCompensationTrigger(String stateName) {
+        CompensationTriggerStateBuilder builder = new CompensationTriggerStateBuilder(stateName, this);
+        stateBuilders.put(stateName, builder);
+        return builder;
     }
 
     @Override
