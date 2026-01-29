@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout -- core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemoting.java core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingClient.java)",
+      "Bash(mvn compile:*)",
+      "Bash(mvn install:*)",
+      "Bash(mvn test:*)",
+      "Bash(findstr:*)",
+      "Bash(mvn clean install:*)",
+      "Bash(mvn test-compile:*)"
+    ]
+  }
+}
