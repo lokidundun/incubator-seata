@@ -18,6 +18,8 @@ package org.apache.seata.saga.statelang.builder;
 
 import org.apache.seata.saga.statelang.domain.*;
 import org.apache.seata.saga.statelang.domain.impl.*;
+import org.apache.seata.saga.statelang.parser.JsonParser;
+import org.apache.seata.saga.statelang.parser.JsonParserFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -515,5 +517,58 @@ public class StateMachineBuilderTest {
         assertEquals(StateType.FAIL, failEnd.getType());
         assertEquals("PURCHASE_FAILED", failEnd.getErrorCode());
         assertEquals("purchase failed", failEnd.getMessage());
+    }
+
+    @Test
+    public void testStateMachineSerializationToJson() {
+        StateMachine stateMachine = StateMachineBuilder.stateMachineBuilder()
+                .withName("simpleTestStateMachine")
+                .withVersion("0.0.1")
+                .withComment("Simple State Machine for Testing")
+                .withStartState("FirstState")
+                .withStates()
+                .newServiceTask("FirstState")
+                .withServiceName("demoService")
+                .withServiceMethod("foo")
+                .withNext("ChoiceState")
+                .and()
+                .newChoice("ChoiceState")
+                .withChoice("foo == 1", "FirstMatchState")
+                .withChoice("foo == 2", "SecondMatchState")
+                .withDefault("FailEnd")
+                .and()
+                .newServiceTask("FirstMatchState")
+                .withServiceName("firstMatchService")
+                .withServiceMethod("process")
+                .withNext("SuccessEnd")
+                .and()
+                .newServiceTask("SecondMatchState")
+                .withServiceName("secondMatchService")
+                .withServiceMethod("process")
+                .withNext("SuccessEnd")
+                .and()
+                .succeedEnd("SuccessEnd")
+                .failEnd("FailEnd")
+                .configure()
+                .build();
+
+        assertNotNull(stateMachine);
+
+        // Test JSON serialization
+        JsonParser jsonParser = JsonParserFactory.getJsonParser("jackson");
+        String json = jsonParser.toJsonString(stateMachine, true);
+        assertNotNull(json);
+
+        System.out.println("Generated JSON from Builder:");
+        System.out.println(json);
+
+        // Verify JSON contains expected content
+        assertTrue(json.contains("simpleTestStateMachine"));
+        assertTrue(json.contains("FirstState"));
+        assertTrue(json.contains("ChoiceState"));
+        assertTrue(json.contains("SuccessEnd"));
+        assertTrue(json.contains("FailEnd"));
+        assertTrue(json.contains("Succeed"));
+        assertTrue(json.contains("Fail"));
     }
 }
