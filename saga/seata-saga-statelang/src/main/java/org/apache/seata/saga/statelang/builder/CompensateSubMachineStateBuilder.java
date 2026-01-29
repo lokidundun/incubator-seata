@@ -28,14 +28,41 @@ import org.apache.seata.saga.statelang.domain.impl.CompensateSubStateMachineStat
 public class CompensateSubMachineStateBuilder
         extends AbstractTaskStateBuilder<CompensateSubStateMachineState, CompensateSubMachineStateBuilder> {
 
+    private String serviceName;
+    private String serviceMethod;
+
     public CompensateSubMachineStateBuilder(String name, StatesConfigurer statesConfigurer) {
         super(name, statesConfigurer);
+    }
+
+    /**
+     * Sets the name of the service to invoke.
+     *
+     * @param serviceName the service bean name
+     * @return this builder
+     */
+    public CompensateSubMachineStateBuilder withServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        return this;
+    }
+
+    /**
+     * Sets the method name to invoke on the service.
+     *
+     * @param method the method name
+     * @return this builder
+     */
+    public CompensateSubMachineStateBuilder withServiceMethod(String method) {
+        this.serviceMethod = method;
+        return this;
     }
 
     @Override
     public CompensateSubStateMachineState build() {
         CompensateSubStateMachineStateImpl state = new CompensateSubStateMachineStateImpl();
         applyCommonProperties(state);
+        state.setServiceName(serviceName);
+        state.setServiceMethod(serviceMethod);
         return state;
     }
 }

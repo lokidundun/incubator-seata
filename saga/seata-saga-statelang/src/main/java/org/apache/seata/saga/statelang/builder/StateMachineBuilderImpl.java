@@ -26,7 +26,6 @@ import java.util.Map;
  * Implementation of StateMachineBuilder.
  * Provides a fluent API for constructing StateMachine definitions.
  *
- * @author xingfudeshi@gmail.com
  */
 public class StateMachineBuilderImpl implements StateMachineBuilder, StatesConfigurer {
 
@@ -106,6 +105,8 @@ public class StateMachineBuilderImpl implements StateMachineBuilder, StatesConfi
             builder = new SubStateMachineStateBuilder(stateName, this);
         } else if (clazz == CompensateSubMachineStateBuilder.class) {
             builder = new CompensateSubMachineStateBuilder(stateName, this);
+        } else if (clazz == LoopStartStateBuilder.class) {
+            builder = new LoopStartStateBuilder(stateName, this);
         } else {
             throw new IllegalArgumentException("Unknown StateBuilder class: " + clazz.getName());
         }
@@ -157,6 +158,27 @@ public class StateMachineBuilderImpl implements StateMachineBuilder, StatesConfi
         state.setName(stateName);
         states.put(stateName, state);
         return this;
+    }
+
+    @Override
+    public LoopStartStateBuilder newLoopStart(String stateName) {
+        LoopStartStateBuilder builder = new LoopStartStateBuilder(stateName, this);
+        stateBuilders.put(stateName, builder);
+        return builder;
+    }
+
+    @Override
+    public SubStateMachineStateBuilder newSubStateMachine(String stateName) {
+        SubStateMachineStateBuilder builder = new SubStateMachineStateBuilder(stateName, this);
+        stateBuilders.put(stateName, builder);
+        return builder;
+    }
+
+    @Override
+    public CompensateSubMachineStateBuilder newCompensateSubMachine(String stateName) {
+        CompensateSubMachineStateBuilder builder = new CompensateSubMachineStateBuilder(stateName, this);
+        stateBuilders.put(stateName, builder);
+        return builder;
     }
 
     @Override

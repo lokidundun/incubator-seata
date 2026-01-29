@@ -297,4 +297,82 @@ public class StateMachineBuilderTest {
                     .build();
         });
     }
+
+    @Test
+    public void testStateMachineWithLoopStart() {
+        StateMachine stateMachine = StateMachineBuilder.stateMachineBuilder()
+                .withName("loopTest")
+                .withStartState("LoopStart")
+                .withStates()
+                .newLoopStart("LoopStart")
+                .withCollection("$.items")
+                .withElementVariableName("item")
+                .withElementIndexName("loopCounter")
+                .withParallel(2)
+                .withCompletionCondition("${loopCounter} >= 10")
+                .withNext("ProcessTask")
+                .and()
+                .newServiceTask("ProcessTask")
+                .withServiceName("itemProcessor")
+                .withServiceMethod("process")
+                .withNext("SuccessEnd")
+                .and()
+                .succeedEnd("SuccessEnd")
+                .configure()
+                .build();
+
+        assertNotNull(stateMachine);
+
+        LoopStartStateImpl loopStart = (LoopStartStateImpl) stateMachine.getState("LoopStart");
+        assertNotNull(loopStart);
+        assertEquals("$.items", loopStart.getCollection());
+        assertEquals("item", loopStart.getElementVariableName());
+        assertEquals("loopCounter", loopStart.getElementIndexName());
+        assertEquals(2, loopStart.getParallel());
+        assertEquals("${loopCounter} >= 10", loopStart.getCompletionCondition());
+    }
+
+    @Test
+    public void testStateMachineWithSubStateMachine() {
+        StateMachine stateMachine = StateMachineBuilder.stateMachineBuilder()
+                .withName("subMachineTest")
+                .withStartState("CallSubMachine")
+                .withStates()
+                .newSubStateMachine("CallSubMachine")
+                .withStateMachineName("subProcess")
+                .withNext("SuccessEnd")
+                .and()
+                .succeedEnd("SuccessEnd")
+                .configure()
+                .build();
+
+        assertNotNull(stateMachine);
+
+        SubStateMachine subMachine = (SubStateMachine) stateMachine.getState("CallSubMachine");
+        assertNotNull(subMachine);
+        assertEquals("subProcess", subMachine.getStateMachineName());
+    }
+
+    @Test
+    public void testStateMachineWithCompensateSubMachine() {
+        StateMachine stateMachine = StateMachineBuilder.stateMachineBuilder()
+                .withName("compensateSubTest")
+                .withStartState("CompensateSub")
+                .withStates()
+                .newCompensateSubMachine("CompensateSub")
+                .withServiceName("compensateService")
+                .withServiceMethod("compensate")
+                .and()
+                .succeedEnd("SuccessEnd")
+                .configure()
+                .build();
+
+        assertNotNull(stateMachine);
+
+        CompensateSubStateMachineState compensateSub =
+                (CompensateSubStateMachineState) stateMachine.getState("CompensateSub");
+        assertNotNull(compensateSub);
+        assertEquals("compensateService", compensateSub.getServiceName());
+        assertEquals("compensate", compensateSub.getServiceMethod());
+    }
 }

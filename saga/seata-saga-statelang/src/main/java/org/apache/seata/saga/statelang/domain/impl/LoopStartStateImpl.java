@@ -25,7 +25,53 @@ import org.apache.seata.saga.statelang.domain.StateType;
  */
 public class LoopStartStateImpl extends BaseState implements LoopStartState {
 
+    private String collection;
+    private String elementVariableName;
+    private String elementIndexName;
+    private String completionCondition;
+    private int parallel = 1;
+
     public LoopStartStateImpl() {
         setType(StateType.LOOP_START);
+    }
+
+    public String getCollection() {
+        return collection;
+    }
+
+    public void setCollection(String collection) {
+        this.collection = collection;
+    }
+
+    public String getElementVariableName() {
+        return elementVariableName;
+    }
+
+    public void setElementVariableName(String elementVariableName) {
+        this.elementVariableName = elementVariableName;
+    }
+
+    public String getElementIndexName() {
+        return elementIndexName;
+    }
+
+    public void setElementIndexName(String elementIndexName) {
+        this.elementIndexName = elementIndexName;
+    }
+
+    public String getCompletionCondition() {
+        return completionCondition;
+    }
+
+    public void setCompletionCondition(String completionCondition) {
+        this.completionCondition = completionCondition;
+    }
+
+    public int getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(int parallel) {
+        this.parallel = parallel;
     }
 }

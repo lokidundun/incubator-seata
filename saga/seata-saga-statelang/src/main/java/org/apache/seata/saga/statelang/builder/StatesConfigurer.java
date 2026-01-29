@@ -83,6 +83,30 @@ public interface StatesConfigurer {
     StatesConfigurer compensationTrigger(String stateName);
 
     /**
+     * Creates a new LoopStart state builder.
+     *
+     * @param stateName the name of the state
+     * @return the LoopStartStateBuilder for configuration
+     */
+    LoopStartStateBuilder newLoopStart(String stateName);
+
+    /**
+     * Creates a new SubStateMachine state builder.
+     *
+     * @param stateName the name of the state
+     * @return the SubStateMachineStateBuilder for configuration
+     */
+    SubStateMachineStateBuilder newSubStateMachine(String stateName);
+
+    /**
+     * Creates a new CompensateSubStateMachine state builder.
+     *
+     * @param stateName the name of the state
+     * @return the CompensateSubMachineStateBuilder for configuration
+     */
+    CompensateSubMachineStateBuilder newCompensateSubMachine(String stateName);
+
+    /**
      * Completes state configuration and returns to the parent StateMachineBuilder.
      *
      * @return the parent StateMachineBuilder
