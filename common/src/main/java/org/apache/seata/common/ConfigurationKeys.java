@@ -1282,4 +1282,33 @@ public interface ConfigurationKeys {
      * The constant RATE_LIMIT_BUCKET_TOKEN_INITIAL_NUM.
      */
     String RATE_LIMIT_BUCKET_TOKEN_INITIAL_NUM = RATE_LIMIT_PREFIX + ".bucketTokenInitialNum";
+
+    /**
+     * Storage migration prefix
+     */
+    String STORE_MIGRATION_PREFIX = STORE_PREFIX + "migration.";
+
+    /**
+     * The constant STORE_MIGRATION_BATCH_SIZE.
+     * Number of sessions to process in each batch during migration
+     */
+    String STORE_MIGRATION_BATCH_SIZE = STORE_MIGRATION_PREFIX + "batchSize";
+
+    /**
+     * The constant STORE_MIGRATION_PARALLEL_THREADS.
+     * Number of parallel threads for migration
+     */
+    String STORE_MIGRATION_PARALLEL_THREADS = STORE_MIGRATION_PREFIX + "parallelThreads";
+
+    /**
+     * The constant STORE_MIGRATION_CHECKPOINT_INTERVAL.
+     * Number of sessions between progress checkpoints
+     */
+    String STORE_MIGRATION_CHECKPOINT_INTERVAL = STORE_MIGRATION_PREFIX + "checkpointInterval";
+
+    /**
+     * The constant STORE_MIGRATION_ENABLE.
+     * Enable/disable storage migration feature
+     */
+    String STORE_MIGRATION_ENABLE = STORE_MIGRATION_PREFIX + "enable";
 }
